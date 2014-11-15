@@ -1,0 +1,147 @@
+/* 
+ * A program to manage student information and grades
+ * Created on October 20, 2014, 9:26 PM
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct{
+    
+    int id;
+    int projectGrade;
+    int examGrade;
+    float finalMark;
+    
+}student;
+
+student **create_class_list( char *filename, int *sizePtr );
+int find_linsrch( int idNo, student **list, int size );
+int find_binsrch( int idNo, student **list, int size );
+void input_grades( char const*filename, student **list, int size );
+void compute_final_course_marks( student **list, int size);
+void output_final_course_mark( char *filename, int size, student **list );
+void print_backwards( student **list, int size);
+void withdraw(int idNo, student **list, int *sizePtr);
+void destroy_list(student **list, int *sizePtr);
+
+int main(int argc, char** argv) {
+    
+    int size;
+    student **stdList;
+    
+    /*we create a list and organize all the grades and stuff*/
+    stdList = create_class_list( "C:\\Users\\Sadman\\Documents\\NetBeansProjects\\CppApplication_2\\stdNumbers.txt", &size );
+    input_grades( "C:\\Users\\Sadman\\Documents\\NetBeansProjects\\CppApplication_2\\stdMarks.txt", stdList, size);
+    printf("DEBUG\n");
+    compute_final_course_marks( stdList, size);
+    output_final_course_mark( "C:\\Users\\Sadman\\Documents\\NetBeansProjects\\CppApplication_2\\outputfile.txt", size, stdList );
+    print_backwards( stdList, size );
+    printf("find_binsrch() test.\n");
+    printf("Index of 1356098: %d\n", find_binsrch(1356098, stdList, 7));
+    withdraw(1356098, stdList, &size);
+    withdraw(1240073, stdList, &size);
+    withdraw(1232235543, stdList, &size);
+    destroy_list(stdList, &size);
+
+    return (EXIT_SUCCESS);
+}
+
+student **create_class_list( char *filename, int *sizePtr ){
+    
+    int i;
+    int size;
+    
+    FILE *stdFile = fopen(filename, "r");
+    
+    /*allocating memory for double pointer that will store 
+     * information of all students*/
+    fscanf(stdFile, "%d", &size);
+    student **classList = (student**) malloc( size * sizeof(student*));
+    *sizePtr = size; //saving value of size to required pointer
+    
+    /*allocating memory for the 4 variables of student*/
+    for ( i=0; i<size; i++ ){
+        classList[i] = (student *) malloc( sizeof(student) );
+    }
+    
+    /*reading the student id's and allocating them to our classList*/
+    for ( i=0; i<size; i++){
+        fscanf(stdFile, "%d", &(classList[i]->id));
+    }
+    
+    fclose(stdFile);
+    
+    return classList;
+    
+}
+
+int find_linsrch( int idNo, student **list, int size ){
+    
+    int i;
+    
+    for( i=0; i<size; i++){
+        if ( idNo == list[i]->id){
+            return i;
+        }
+    }
+    
+    return -1;
+    
+}
+
+int find_binsrch( int idNo, student **list, int size ){
+    
+    int middle, low = 0, high = size-1;
+    
+    while( low <= high){
+        
+        middle = (low + high)/2;
+        printf("%d\n", middle);
+        if ( idNo == list[middle]->id){
+            return middle;
+        }
+        if ( list[middle]->id > idNo ){
+            low = middle+1;
+        }else{
+            high = middle-1;
+        }
+        
+    }
+    return -1;
+    
+}
+
+void input_grades( char const*filename, student **list, int size ){
+    
+    int i, idPos, idNo;
+    char junk; //for white spaces and newlines
+    
+    FILE *marksFile = fopen(filename, "r");
+    /*for loop goes through all the student data contained in the file*/
+    for ( i=0; i<size; i++){
+        
+        fscanf(marksFile, "%d", &idNo); //getting the student id
+        idPos = find_linsrch( idNo, list, size );
+        
+        fscanf(marksFile, "%d", &(list[idPos]->projectGrade)); //getting the project grade
+        
+        fscanf(marksFile, "%d", &(list[idPos]->examGrade)); //getting the final mark
+        
+    }
+    
+    fclose(marksFile);
+    
+}
+
+void compute_final_course_marks( student **list, int size){
+    
+    int i, projG, examG;
+    
+    for ( i=0; i<size; i++){
+        
+        projG = list[i]->projectGrade; examG = list[i]->examGrade;
+        list[i]->finalMark = (0.4 * projG) + (0.6 * examG);
+        
+    }
+    
