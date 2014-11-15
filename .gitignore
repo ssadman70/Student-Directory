@@ -145,3 +145,70 @@ void compute_final_course_marks( student **list, int size){
         
     }
     
+void output_final_course_mark( char *filename, int size, student **list ){
+    
+    int i;
+    
+    FILE *output = fopen(filename, "w");
+    
+    for ( i=0; i<size; i++ ){
+        fprintf( output, "%d %.2f\r\n", list[i]->id, list[i]->finalMark);
+    }
+    
+    fclose(output);
+    
+}
+
+
+void print_backwards( student **list, int size){
+    
+    if ( size == 0 ){   //base case
+       // printf( "%d\n", list[size]);
+    }else{              //recursive case
+        printf( "%d\n", list[size-1]->id );
+        print_backwards( list, size-1 );
+    }
+}
+
+void withdraw(int idNo, student **list, int *sizePtr){
+    
+    int size = *sizePtr;
+    int delPos;
+    int i;
+    
+    delPos = find_linsrch( idNo, list, size ); //position of structure to be deleted
+    
+    /*all structures are shifted left by 1 starting from where we remove the information*/
+    if ( delPos == (size-1) ){
+        
+        free( list[delPos] );
+        (*sizePtr)--;
+        
+    }else if( delPos == -1 ){
+        
+        printf("Student does not exist in the system!");
+    }
+    
+    else{
+        free( list[delPos]);
+        for ( i=delPos; i<(size - 1); i++ ){
+            list[i] = list[i+1];
+        }
+        
+        //(*sizePtr)--;
+        *sizePtr = size - 1;
+    }    
+    
+}
+
+void destroy_list(student **list, int *sizePtr){
+    
+    int i;
+    
+    for ( i=0; i<(*sizePtr); i++){
+        free(list[i]);
+    }
+    free(list);
+    *sizePtr = 0;
+    
+}
